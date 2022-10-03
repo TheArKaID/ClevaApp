@@ -28,3 +28,17 @@ Route.group(async () => {
   Route.post('/login', 'AuthController.login')
   Route.post('/register', 'AuthController.register')
 }).prefix('/auth')
+
+Route.group(async () => {
+  Route.post('/logout', 'AuthController.logout')
+
+  Route.group(async () => {
+    Route.resource('/users', 'UsersController').apiOnly().as('admin.users')
+  }).prefix('/admin').namespace('App/Controllers/Http/Admin')
+  
+  Route.group(async () => {
+    // Route.get('/profile', 'UserController.profile')
+    // Route.put('/profile', 'UserController.updateProfile')
+    // Route.put('/password', 'UserController.updatePassword')
+  }).prefix('/user')
+}).middleware('auth:api')
