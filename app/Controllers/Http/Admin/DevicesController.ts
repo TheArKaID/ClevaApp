@@ -4,8 +4,8 @@ import DeviceService from 'App/Services/DeviceService'
 const deviceService = new DeviceService()
 
 export default class DevicesController {
-    public async index({}: HttpContextContract) {
-        const devices = await deviceService.getAllDevices()
+    public async index({auth}: HttpContextContract) {
+        const devices = await deviceService.getDevicesByUser(auth.use('api').user?.id)
         return {
             status: 200,
             message: 'List of devices',
@@ -47,6 +47,25 @@ export default class DevicesController {
             status: 200,
             message: 'Device deleted successfully',
             data: device,
+        }
+    }
+
+    public async grant({ request }: HttpContextContract) {
+        const id = request.input('id')
+        const user_id = request.input('user_id')
+        const device = await deviceService.grantDevice(id, user_id)
+
+        if (typeof device !== 'string') {
+            return {
+                status: 200,
+                message: 'Device granted successfully',
+                data: device,
+            }
+        }
+
+        return {
+            status: 400,
+            message: device
         }
     }
 }
