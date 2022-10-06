@@ -14,6 +14,9 @@ export default class Device extends BaseModel {
 
   @column()
   public macAddress: string
+
+  @column()
+  public type: number
   
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
