@@ -2,7 +2,7 @@ import { DateTime } from 'luxon'
 import { BaseModel, beforeCreate, belongsTo, column, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm'
 import User from './User'
 import Company from './Company'
-import { uuid } from 'uuidv4'
+import { v4 as uuidv4 } from 'uuid'
 import AccessDevice from './AccessDevice'
 
 export default class Device extends BaseModel {
@@ -46,7 +46,7 @@ export default class Device extends BaseModel {
 
   @beforeCreate()
   public static assignUuid(device: Device) {
-    device.id = uuid()
+    device.id = uuidv4()
   }
 
 }
