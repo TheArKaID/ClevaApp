@@ -34,7 +34,7 @@ Route.group(async () => {
 
   Route.group(async () => {
     Route.resource('/users', 'UsersController').apiOnly().as('admin.users')
-  }).prefix('/admin').namespace('App/Controllers/Http/Admin')
+  }).prefix('admin').namespace('App/Controllers/Http/Admin')
   
   Route.group(async () => {
     // Route.get('/profile', 'UserController.profile')
@@ -46,5 +46,7 @@ Route.group(async () => {
     Route.delete('/devices/:id', 'DeviceController.destroy').as('user.devices.destroy')
     Route.post('/devices/:id/grant', 'DeviceController.grant').as('user.devices.grant')
     Route.post('/devices/:id/revoke', 'DeviceController.revoke').as('user.devices.revoke')
-  }).prefix('/user').namespace('App/Controllers/Http/User')
-}).middleware('auth:api')
+
+    Route.resource('/companies', 'CompaniesController').apiOnly().as('user.companies')
+  }).prefix('user').namespace('App/Controllers/Http/User')
+}).prefix('api').middleware('auth:api')
