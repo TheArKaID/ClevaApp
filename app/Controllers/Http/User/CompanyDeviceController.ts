@@ -1,63 +1,58 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Device from 'App/Models/Device'
+import CompanyService from 'App/Services/CompanyService'
 import DeviceService from 'App/Services/DeviceService'
 
 const deviceService = new DeviceService()
+const companyService = new CompanyService()
 
-export default class DeviceController {
-    public async index({ auth }: HttpContextContract) {
-        const owner_id = auth.use('api').user?.id as string
-        const devices = await deviceService.getUserAccessDevices(owner_id)
+export default class CompanyDeviceController {
+    public async index({ auth, params }: HttpContextContract) {
+        const user_id = auth.use('api').user?.id as string
+        const company_id = params.company_id
+        const devices = await companyService.getCompanyDevices(company_id, user_id)
         return {
             status: 200,
             message: 'List of devices',
             data: devices.map(device => {
-                let res = {
+                return {
                     id: device.id,
                     name: device.name,
-                    mac_address: device.macAddress,
-                    is_owner: device.ownerId === owner_id,
-                    type: device.accessDevices[0]?.companyId ? 'company' : 'personal',
-
+                    mac_address: device.macAddress
                 }
-                if (device.accessDevices[0]?.companyId) {
-                    res['company'] = device.accessDevices[0]?.company
-                }
-
-                return res
             })
-
         }
     }
 
-    public async store({ auth, request }: HttpContextContract) {
+    public async store({ params, request, auth }: HttpContextContract) {
         const data = {
             name: request.input('name'),
             mac_address: request.input('mac_address'),
-            owner_id: auth.use('api').user?.id,
-            owned_by: Device.ownedByUser,
+            owner_id: params.company_id,
+            owned_by: Device.ownedByCompany,
         }
-        const deviceUser = await deviceService.createDevice(data)
+        const user_id = auth.use('api').user?.id as string
+        const device = await deviceService.createCompanyDevice(user_id, data)
         return {
             status: 200,
             message: 'Device created',
-            data: deviceUser,
+            data: device,
         }
     }
 
     public async update({ request, params, auth }: HttpContextContract) {
         const device_id = params.id
-        const owner_id = auth.use('api').user?.id as string
+        const company_id = params.company_id
+        const user_id = auth.use('api').user?.id as string
         const data = {
             name: request.input('name'),
             mac_address: request.input('mac_address'),
         }
-        const device = await deviceService.updateDevice(device_id, owner_id, data)
+        const device = await deviceService.updateCompanyDevice(user_id, device_id, company_id, data)
         let res = {
             id: device.id,
             name: device.name,
-            mac_address: device.macAddress,
-            is_owner: device.ownerId === owner_id
+            mac_address: device.macAddress
 
         }
         return {
@@ -70,8 +65,9 @@ export default class DeviceController {
     public async destroy({ params, auth }: HttpContextContract) {
         const user_id = auth.use('api').user?.id as string
         const device_id = params.id
+        const company_id = params.company_id
 
-        const device = await deviceService.deleteDevice(device_id, user_id)
+        const device = await deviceService.deleteCompanyDevice(user_id, device_id, company_id)
         return {
             status: 200,
             message: 'Device deleted',
@@ -118,5 +114,5 @@ export default class DeviceController {
             message: device
         }
     }
-    
+
 }

@@ -1,4 +1,5 @@
 import Company from "App/Models/Company"
+import Device from "App/Models/Device"
 
 export default class CompanyService {
     // Get all companies
@@ -47,5 +48,11 @@ export default class CompanyService {
     // Check company ownership
     public async isOwnedByUser(company_id: string, owner_id: string) {
         return await Company.query().where('id', company_id).where('owner_id', owner_id).firstOrFail()
+    }
+
+    // Get devices owned by Company
+    public async getCompanyDevices(company_id: string, owner_id: string) {
+        this.isOwnedByUser(company_id, owner_id);
+        return await Device.query().where('owned_by', Device.ownedByCompany).where('owner_id', company_id)
     }
 }

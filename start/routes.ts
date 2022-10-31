@@ -47,6 +47,7 @@ Route.group(async () => {
     Route.post('/devices/:id/grant', 'DeviceController.grant').as('user.devices.grant')
     Route.post('/devices/:id/revoke', 'DeviceController.revoke').as('user.devices.revoke')
 
-    Route.resource('/companies', 'CompaniesController').apiOnly().as('user.companies')
+    Route.resource('companies', 'CompaniesController').apiOnly().as('user.companies')
+    Route.resource('companies.devices', 'CompanyDeviceController').apiOnly().as('user.companies.devices')
   }).prefix('user').namespace('App/Controllers/Http/User')
 }).prefix('api').middleware('auth:api')

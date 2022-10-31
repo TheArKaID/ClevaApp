@@ -1,6 +1,9 @@
 import AccessDevice from "App/Models/AccessDevice"
 import Device from "App/Models/Device"
 import User from "App/Models/User"
+import CompanyService from "./CompanyService"
+
+const companyService = new CompanyService()
 
 export default class DeviceService {
     // Get all devices
@@ -40,9 +43,35 @@ export default class DeviceService {
         return await device.delete()
     }
 
+    // Create device for Company
+    public async createCompanyDevice(user_id: string, data: any) {
+        await companyService.isOwnedByUser(data.owner_id, user_id)
+        return await this.createDevice(data)
+    }
+
+    // Update device
+    public async updateCompanyDevice(user_id: string, device_id: string, company_id: string, data: any) {
+        await companyService.isOwnedByUser(company_id, user_id)
+        const device = await this.isOwnedByCompany(device_id, company_id)
+        device.merge(data)
+        return device.save()
+    }
+
+    // Delete device for Company
+    public async deleteCompanyDevice(user_id: string, device_id: string, company_id: string) {
+        await companyService.isOwnedByUser(company_id, user_id)
+        const device = await this.isOwnedByCompany(device_id, company_id)
+        return await device.delete()
+    }
+
     // Check Personal Device Ownership
     public async isOwnedByUser(device_id: string, owner_id: string) {
         return await Device.query().where('id', device_id).where('owned_by', Device.ownedByUser).where('owner_id', owner_id).firstOrFail()
+    }
+
+    // Check Company Device Ownership
+    public async isOwnedByCompany(device_id: string, company_id: string) {
+        return await Device.query().where('id', device_id).where('owned_by', Device.ownedByCompany).where('owner_id', company_id).firstOrFail()
     }
 
     // Grant User to Access Personal Device
@@ -90,10 +119,12 @@ export default class DeviceService {
     }
 
     // Get Devices that can be accessed by the User
-    public async getUserDevices(user_id: string) {
+    public async getUserAccessDevices(user_id: string) {
         const devices = await Device.query().where('owned_by', Device.ownedByUser).where('owner_id', user_id).orWhereHas('accessDevices', (query) => {
             query.where('user_id', user_id).preload('company').preload('device')
         }).preload('accessDevices')
         return devices
     }
+
+    // 
 }
