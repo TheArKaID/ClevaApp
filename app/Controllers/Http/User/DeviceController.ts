@@ -11,22 +11,7 @@ export default class DeviceController {
         return {
             status: 200,
             message: 'List of devices',
-            data: devices.map(device => {
-                let res = {
-                    id: device.id,
-                    name: device.name,
-                    mac_address: device.macAddress,
-                    is_owner: device.ownerId === owner_id,
-                    type: device.accessDevices[0]?.companyId ? 'company' : 'personal',
-
-                }
-                if (device.accessDevices[0]?.companyId) {
-                    res['company'] = device.accessDevices[0]?.company
-                }
-
-                return res
-            })
-
+            data: devices
         }
     }
 

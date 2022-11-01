@@ -120,11 +120,31 @@ export default class DeviceService {
 
     // Get Devices that can be accessed by the User
     public async getUserAccessDevices(user_id: string) {
-        const devices = await Device.query().where('owned_by', Device.ownedByUser).where('owner_id', user_id).orWhereHas('accessDevices', (query) => {
-            query.where('user_id', user_id).preload('company').preload('device')
-        }).preload('accessDevices')
-        return devices
-    }
+        const devices = await Device.query().where(($query) => {
+            $query.where('owned_by', Device.ownedByUser).andWhere('owner_id', user_id)
+        }).orWhere(($query) => {
+            $query.where('owned_by', Device.ownedByCompany).andWhereIn('owner_id', ($query) => {
+                $query.select('id').from('companies').where('owner_id', user_id)
+            })
+        }).orWhereIn('id', ($query) => {
+            $query.select('device_id').from('access_devices').where('user_id', user_id)
+        }).preload('accessDevices').preload('user').preload('company')
 
-    // 
+        return devices.map(device => {
+            return {
+                id: device.id,
+                name: device.name,
+                mac_address: device.macAddress,
+                ownership: device.ownedBy === Device.ownedByUser ? {
+                    type: device.ownerType,
+                    is_owner: device.ownerId === user_id,
+                    name: device.user.name
+                } : {
+                    type: device.ownerType,
+                    is_owner: device.company.ownerId === user_id,
+                    name: device.company.name
+                }
+            }
+        })
+    }
 }
