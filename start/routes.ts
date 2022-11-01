@@ -27,7 +27,7 @@ Route.get('/', async () => {
 Route.group(async () => {
   Route.post('/login', 'AuthController.login')
   Route.post('/register', 'AuthController.register')
-}).prefix('/auth')
+}).prefix('api/auth')
 
 Route.group(async () => {
   Route.post('/logout', 'AuthController.logout')
