@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon'
-import { BaseModel, beforeCreate, belongsTo, column, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, beforeCreate, BelongsTo, belongsTo, column, computed, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm'
 import User from './User'
 import Company from './Company'
 import { v4 as uuidv4 } from 'uuid'
@@ -33,13 +33,16 @@ export default class Device extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime
 
-  public owner = () => {
-    if (this.ownedBy === Device.ownedByUser) {
-      return belongsTo(() => User, { foreignKey: 'ownerId', localKey: 'id' })
-    } else if (this.ownedBy === Device.ownedByCompany) {
-      return belongsTo(() => Company, { foreignKey: 'ownerId', localKey: 'id' })
-    }
+  @computed()
+  public get ownerType() {
+    return this.ownedBy === Device.ownedByUser ? 'Personal' : 'Company'
   }
+
+  // Belongs to user or company
+  @belongsTo(() => User, { foreignKey: 'ownerId', localKey: 'id' })
+  public user: BelongsTo<typeof User>
+  @belongsTo(() => Company, { foreignKey: 'ownerId', localKey: 'id' })
+  public company: BelongsTo<typeof Company>
 
   @hasMany(() => AccessDevice)
   public accessDevices: HasMany<typeof AccessDevice>
