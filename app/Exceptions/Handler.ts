@@ -27,7 +27,6 @@ export default class ExceptionHandler extends HttpExceptionHandler {
      */
     if (ctx.request.url().split('/')[1] == 'api') {
       if (error.code === 'E_ROW_NOT_FOUND') {
-        console.log(Object.getPrototypeOf(Object.getPrototypeOf(error).constructor).name)
         return ctx.response.send({
           'status': 400,
           'message': 'Failed. ' + typeof error + ' Not Found.'
