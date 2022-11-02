@@ -78,8 +78,10 @@ export default class CompanyDeviceController {
     public async grant({ request, params, auth }: HttpContextContract) {
         const device_id = params.id
         const user_id = request.input('user_id')
-        const id = auth.use('api').user?.id as string
-        const device = await deviceService.grantPersonalDevice(id, device_id, user_id)
+        const owner_id = auth.use('api').user?.id as string
+        const company_id = params.company_id
+
+        const device = await deviceService.grantCompanyDevice(owner_id, device_id, company_id, user_id)
 
         if (typeof device !== 'string') {
             return {
@@ -99,8 +101,9 @@ export default class CompanyDeviceController {
         const device_id = params.id
         const user_id = request.input('user_id')
         const owner_id = auth.use('api').user?.id as string
+        const company_id = params.company_id
 
-        const device = await deviceService.revokePersonalDevice(owner_id, device_id, user_id)
+        const device = await deviceService.revokeCompanyDevice(owner_id, device_id, company_id, user_id)
 
         if (typeof device !== 'string') {
             return {

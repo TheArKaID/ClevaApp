@@ -81,11 +81,23 @@ export default class DeviceService {
         return await this.grantDevice(device, user_id) ? true : 'Failed. User Not Found.'
     }
 
+    // Grant User to Access Company Device
+    public async grantCompanyDevice(owner_id: string, device_id: string, company_id: string, user_to_grant_id: string) {
+        await companyService.isOwnedByUser(company_id, owner_id)
+        const device = await this.isOwnedByCompany(device_id, company_id)
+
+        return await this.grantDevice(device, user_to_grant_id, company_id) ? true : 'Failed. User Not Found.'
+    }
+
     // Grant user access to device
     public async grantDevice(device: Device, user_id: string, company_id: string | null = null) {
         const user = await User.find(user_id)
         if (user) {
-            const accessDevice = await AccessDevice.create({
+            const accessDevice = await AccessDevice.updateOrCreate({
+                userId: user_id,
+                companyId: company_id,
+                deviceId: device.id,
+            }, {
                 userId: user_id,
                 companyId: company_id,
                 deviceId: device.id,
@@ -100,6 +112,14 @@ export default class DeviceService {
         const device = await this.isOwnedByUser(device_id, owner_id)
 
         return await this.revokeDevice(device, user_id) ? true : 'Failed. User Not Found.'
+    }
+
+    // Revoke User Access from Company Device
+    public async revokeCompanyDevice(owner_id: string, device_id: string, company_id: string, user_to_revoke_id: string) {
+        await companyService.isOwnedByUser(company_id, owner_id)
+        const device = await this.isOwnedByCompany(device_id, company_id)
+        
+        return await this.revokeDevice(device, user_to_revoke_id, company_id) ? true : 'Failed. User Not Found.'
     }
 
     // Revoke user access to device
