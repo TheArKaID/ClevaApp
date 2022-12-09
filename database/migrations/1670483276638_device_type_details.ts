@@ -1,0 +1,23 @@
+import BaseSchema from '@ioc:Adonis/Lucid/Schema'
+
+export default class extends BaseSchema {
+  protected tableName = 'device_type_details'
+
+  public async up () {
+    this.schema.createTable(this.tableName, (table) => {
+      table.uuid('id').primary()
+      table.uuid('device_type_id').references('device_types.id').onDelete('CASCADE')
+      table.string('key').notNullable()
+
+      /**
+       * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
+       */
+      table.timestamp('created_at', { useTz: true })
+      table.timestamp('updated_at', { useTz: true })
+    })
+  }
+
+  public async down () {
+    this.schema.dropTable(this.tableName)
+  }
+}

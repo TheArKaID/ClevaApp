@@ -4,6 +4,7 @@ import User from './User'
 import Company from './Company'
 import { v4 as uuidv4 } from 'uuid'
 import AccessDevice from './AccessDevice'
+import DeviceType from './DeviceType'
 
 export default class Device extends BaseModel {
   public static ownedByUser = 1
@@ -11,6 +12,9 @@ export default class Device extends BaseModel {
 
   @column({ isPrimary: true })
   public id: string
+
+  @column()
+  public deviceTypeId: string
 
   @column()
   public ownerId: string
@@ -24,9 +28,6 @@ export default class Device extends BaseModel {
   @column()
   public macAddress: string
 
-  @column()
-  public type: number
-
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
 
@@ -37,6 +38,11 @@ export default class Device extends BaseModel {
   public get ownerType() {
     return this.ownedBy === Device.ownedByUser ? 'Personal' : 'Company'
   }
+
+  @belongsTo(() => DeviceType, {
+    serializeAs: "type"
+  })
+  public deviceType: BelongsTo<typeof DeviceType>
 
   // Belongs to user or company
   @belongsTo(() => User, { foreignKey: 'ownerId', localKey: 'id' })
