@@ -34,6 +34,7 @@ Route.group(async () => {
 
   Route.group(async () => {
     Route.resource('/users', 'UsersController').apiOnly().as('admin.users')
+    Route.resource('/device-types', 'DeviceTypesController').apiOnly().as('admin.device-types')
   }).prefix('admin').namespace('App/Controllers/Http/Admin')
   
   Route.group(async () => {
