@@ -52,5 +52,8 @@ Route.group(async () => {
     Route.resource('companies.devices', 'CompanyDeviceController').apiOnly().as('user.companies.devices')
     Route.post('companies/:company_id/devices/:id/grant', 'CompanyDeviceController.grant').as('user.companies.devices.grant')
     Route.post('companies/:company_id/devices/:id/revoke', 'CompanyDeviceController.revoke').as('user.companies.devices.revoke')
+
+    Route.get('logs', 'DeviceController.getLog').as('user.log.get')
+    Route.post('logs', 'DeviceController.sendLog').as('user.log.post')
   }).prefix('user').namespace('App/Controllers/Http/User')
 }).prefix('api').middleware('auth:api')

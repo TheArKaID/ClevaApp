@@ -167,4 +167,41 @@ export default class DeviceService {
             }
         })
     }
+
+    public async getUserDeviceLogs(user_id: string) {
+        const device = await Device.query().select(['id', 'name', 'mac_address']).where(($query) => {
+            $query.where('owned_by', Device.ownedByUser).andWhere('owner_id', user_id)
+        }).orWhere(($query) => {
+            $query.where('owned_by', Device.ownedByCompany).andWhereIn('owner_id', ($query) => {
+                $query.select('id').from('companies').where('owner_id', user_id)
+            })
+        }).orWhereIn('id', ($query) => {
+            $query.select('device_id').from('access_devices').where('user_id', user_id)
+        }).preload('logs', (query) => {
+            query.select(['id', 'action', 'data']).where('user_id', user_id).orderBy('created_at', 'desc')
+        })
+
+        return device
+    }
+
+    public async logUserDevice(user_id: string, device_id: string, data: any) {
+        const device = await Device.query().where('id', device_id).where(($query) => {
+            $query.where('owned_by', Device.ownedByUser).andWhere('owner_id', user_id)
+        }).orWhere(($query) => {
+            $query.where('owned_by', Device.ownedByCompany).andWhereIn('owner_id', ($query) => {
+                $query.select('id').from('companies').where('owner_id', user_id)
+            })
+        }).orWhereIn('id', ($query) => {
+            $query.select('device_id').from('access_devices').where('user_id', user_id)
+        }).firstOrFail()
+
+        const log = await device.related('logs').create({
+            deviceId: device_id,
+            userId: user_id,
+            action: data.action,
+            data: data.data
+        })
+
+        return log
+    }
 }

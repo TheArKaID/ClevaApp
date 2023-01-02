@@ -104,4 +104,29 @@ export default class DeviceController {
         }
     }
     
+    public async getLog({ auth }: HttpContextContract) {
+        const user_id = auth.use('api').user?.id as string
+
+        const logs = await deviceService.getUserDeviceLogs(user_id)
+        return {
+            status: 200,
+            message: 'Device log',
+            data: logs
+        }
+    }
+    
+    public async sendLog({ request, auth }: HttpContextContract) {
+        const device_id = request.input('id')
+        const user_id = auth.use('api').user?.id as string
+        const data = {
+            action: request.input('action'),
+            data: request.input('data'),
+        }
+        const log = await deviceService.logUserDevice(user_id, device_id, data)
+        return {
+            status: 200,
+            message: 'Logged',
+            data: log,
+        }
+    }
 }
