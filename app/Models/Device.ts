@@ -1,11 +1,12 @@
 import { DateTime } from 'luxon'
-import { BaseModel, beforeCreate, BelongsTo, belongsTo, column, computed, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, beforeCreate, BelongsTo, belongsTo, column, computed, HasMany, hasMany, HasManyThrough, hasManyThrough } from '@ioc:Adonis/Lucid/Orm'
 import User from './User'
 import Company from './Company'
 import { v4 as uuidv4 } from 'uuid'
 import AccessDevice from './AccessDevice'
 import DeviceType from './DeviceType'
 import DeviceLog from './DeviceLog'
+import DeviceTypeDetail from './DeviceTypeDetail'
 
 export default class Device extends BaseModel {
   public static ownedByUser = 1
@@ -56,6 +57,15 @@ export default class Device extends BaseModel {
 
   @hasMany(() => DeviceLog)
   public logs: HasMany<typeof DeviceLog>
+
+  @hasManyThrough([ () => DeviceTypeDetail, () => DeviceType ], {
+    localKey: 'deviceTypeId',
+    foreignKey: 'id',
+    throughLocalKey: 'id',
+    throughForeignKey: 'deviceTypeId'
+  })
+  public details: HasManyThrough<typeof DeviceTypeDetail>
+  
 
   @beforeCreate()
   public static assignUuid(device: Device) {

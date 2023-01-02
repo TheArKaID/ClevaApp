@@ -148,13 +148,14 @@ export default class DeviceService {
             })
         }).orWhereIn('id', ($query) => {
             $query.select('device_id').from('access_devices').where('user_id', user_id)
-        }).preload('accessDevices').preload('user').preload('company')
+        }).preload('details', ($query) => $query.select(['key'])).preload('user').preload('company')
 
         return devices.map(device => {
             return {
                 id: device.id,
                 name: device.name,
                 mac_address: device.macAddress,
+                details: device.details,
                 ownership: device.ownedBy === Device.ownedByUser ? {
                     type: device.ownerType,
                     is_owner: device.ownerId === user_id,
@@ -185,7 +186,7 @@ export default class DeviceService {
     }
 
     public async logUserDevice(user_id: string, device_id: string, data: any) {
-        const device = await Device.query().where('id', device_id).where(($query) => {
+        const device = await Device.query().select(['id', 'deviceTypeId']).where('id', device_id).where(($query) => {
             $query.where('owned_by', Device.ownedByUser).andWhere('owner_id', user_id)
         }).orWhere(($query) => {
             $query.where('owned_by', Device.ownedByCompany).andWhereIn('owner_id', ($query) => {
@@ -193,14 +194,20 @@ export default class DeviceService {
             })
         }).orWhereIn('id', ($query) => {
             $query.select('device_id').from('access_devices').where('user_id', user_id)
-        }).firstOrFail()
+        }).preload('details', ($query) => $query.select(['key'])).firstOrFail()
 
+        let newData = {};
+        for (const detail of device.details) {
+            newData[detail.key] = data.data[detail.key] || ''
+        }
+    
         const log = await device.related('logs').create({
             deviceId: device_id,
             userId: user_id,
             action: data.action,
-            data: data.data
-        })
+            data: newData as string
+        });
+
 
         return log
     }

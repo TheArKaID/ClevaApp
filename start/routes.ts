@@ -41,10 +41,7 @@ Route.group(async () => {
     // Route.get('/profile', 'UserController.profile')
     // Route.put('/profile', 'UserController.updateProfile')
     // Route.put('/password', 'UserController.updatePassword')
-    Route.get('/devices', 'DeviceController.index')
-    Route.post('/devices', 'DeviceController.store')
-    Route.put('/devices/:id', 'DeviceController.update').as('user.devices.update')
-    Route.delete('/devices/:id', 'DeviceController.destroy').as('user.devices.destroy')
+    Route.resource('devices', 'DeviceController').apiOnly().as('user.devices')
     Route.post('/devices/:id/grant', 'DeviceController.grant').as('user.devices.grant')
     Route.post('/devices/:id/revoke', 'DeviceController.revoke').as('user.devices.revoke')
 
