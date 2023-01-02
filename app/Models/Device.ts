@@ -5,6 +5,7 @@ import Company from './Company'
 import { v4 as uuidv4 } from 'uuid'
 import AccessDevice from './AccessDevice'
 import DeviceType from './DeviceType'
+import DeviceLog from './DeviceLog'
 
 export default class Device extends BaseModel {
   public static ownedByUser = 1
@@ -52,6 +53,9 @@ export default class Device extends BaseModel {
 
   @hasMany(() => AccessDevice)
   public accessDevices: HasMany<typeof AccessDevice>
+
+  @hasMany(() => DeviceLog)
+  public logs: HasMany<typeof DeviceLog>
 
   @beforeCreate()
   public static assignUuid(device: Device) {
