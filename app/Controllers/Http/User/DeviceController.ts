@@ -1,6 +1,8 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Device from 'App/Models/Device'
 import DeviceService from 'App/Services/DeviceService'
+import CreateDevice from 'App/Validators/CreateDeviceValidator'
+import UpdateDevice from 'App/Validators/UpdateDeviceValidator'
 
 const deviceService = new DeviceService()
 
@@ -16,13 +18,13 @@ export default class DeviceController {
     }
 
     public async store({ auth, request }: HttpContextContract) {
-        const data = {
-            name: request.input('name'),
-            mac_address: request.input('mac_address'),
-            owner_id: auth.use('api').user?.id,
-            owned_by: Device.ownedByUser,
-        }
+        let data = await request.validate(CreateDevice)
+
+        data['owner_id'] = auth.use('api').user?.id
+        data['owned_by'] = Device.ownedByUser
+
         const deviceUser = await deviceService.createDevice(data)
+
         return {
             status: 200,
             message: 'Device created',
@@ -31,24 +33,22 @@ export default class DeviceController {
     }
 
     public async update({ request, params, auth }: HttpContextContract) {
+        let data = await request.validate(UpdateDevice)
+
         const device_id = params.id
         const owner_id = auth.use('api').user?.id as string
-        const data = {
-            name: request.input('name'),
-            mac_address: request.input('mac_address'),
-        }
+        
         const device = await deviceService.updateDevice(device_id, owner_id, data)
-        let res = {
-            id: device.id,
-            name: device.name,
-            mac_address: device.macAddress,
-            is_owner: device.ownerId === owner_id
 
-        }
         return {
             status: 200,
             message: 'Device updated',
-            data: res,
+            data: {
+                id: device.id,
+                name: device.name,
+                mac_address: device.macAddress,
+                is_owner: device.ownerId === owner_id
+            },
         }
     }
 
