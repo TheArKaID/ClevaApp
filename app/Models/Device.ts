@@ -7,6 +7,7 @@ import AccessDevice from './AccessDevice'
 import DeviceType from './DeviceType'
 import DeviceLog from './DeviceLog'
 import DeviceTypeDetail from './DeviceTypeDetail'
+import { createHash } from 'crypto'
 
 export default class Device extends BaseModel {
   public static ownedByUser = 1
@@ -29,6 +30,9 @@ export default class Device extends BaseModel {
 
   @column()
   public macAddress: string
+
+  @column()
+  public key: string
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
@@ -66,10 +70,13 @@ export default class Device extends BaseModel {
   })
   public details: HasManyThrough<typeof DeviceTypeDetail>
   
-
   @beforeCreate()
   public static assignUuid(device: Device) {
     device.id = uuidv4()
   }
 
+  @beforeCreate() // Generate random descrypt key
+  public static async assignKey(device: Device) {
+    device.key = createHash('md5').update(device.id).digest('hex')
+  }
 }
