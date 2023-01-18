@@ -101,6 +101,7 @@ export default class DeviceService {
                 userId: user_id,
                 companyId: company_id,
                 deviceId: device.id,
+                key: device.key
             })
             return accessDevice
         }
