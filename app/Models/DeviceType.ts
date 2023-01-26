@@ -11,6 +11,9 @@ export default class DeviceType extends BaseModel {
   @column()
   public name: string
 
+  @column()
+  public characteristics: string
+
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
 
