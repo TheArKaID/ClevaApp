@@ -1,5 +1,6 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import DeviceTypeService from 'App/Services/DeviceTypeService'
+import CreateDeviceType from 'App/Validators/CreateDeviceTypeValidator'
 
 const deviceTypeService = new DeviceTypeService()
 
@@ -14,12 +15,12 @@ export default class DeviceTypesController {
                     "id": deviceType.id,
                     "name": deviceType.name,
                     "details": deviceType.deviceTypeDetail.map(detail => {
-                        // return JSON.parse('{"' + detail.id + '":"' + detail.key + '"}')
                         return {
                             "id": detail.id,
                             "key": detail.key
                         }
                     }),
+                    "characteristics": deviceType.characteristics,
                     "created_at": deviceType.createdAt,
                 }
             })
@@ -27,10 +28,8 @@ export default class DeviceTypesController {
     }
 
     public async store({ request }: HttpContextContract) {
-        const data = {
-            name: request.input('name'),
-            details: request.input('details'),
-        }
+        const data = await request.validate(CreateDeviceType)
+        
         const deviceType = await deviceTypeService.createDeviceType(data)
         return {
             status: 200,
@@ -44,7 +43,8 @@ export default class DeviceTypesController {
                         "key": detail.key,
                         // "unit": detail.unit,
                     }
-                })
+                }),
+                "characteristics": JSON.parse(deviceType.characteristics)
             },
         }
     }

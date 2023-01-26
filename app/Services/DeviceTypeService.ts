@@ -11,6 +11,7 @@ export default class DeviceService {
     public async createDeviceType(data: any) {
         const deviceType = await DeviceType.create({
             name: data.name,
+            characteristics: JSON.stringify(data.characteristics),
         })
         await deviceType.related('deviceTypeDetail').createMany(data.details)
         await deviceType.load('deviceTypeDetail')
