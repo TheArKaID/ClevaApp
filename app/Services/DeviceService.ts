@@ -151,23 +151,14 @@ export default class DeviceService {
             $query.select('device_id').from('access_devices').where('user_id', user_id)
         }).preload('details', ($query) => $query.select(['key'])).preload('user').preload('company')
 
-        return devices.map(device => {
-            return {
-                id: device.id,
-                name: device.name,
-                mac_address: device.macAddress,
-                details: device.details,
-                ownership: device.ownedBy === Device.ownedByUser ? {
-                    type: device.ownerType,
-                    is_owner: device.ownerId === user_id,
-                    name: device.user.name
-                } : {
-                    type: device.ownerType,
-                    is_owner: device.company.ownerId === user_id,
-                    name: device.company.name
-                }
+        return devices.reduce((acc: any, device: Device) => {
+            if (device.ownedBy === Device.ownedByUser) {
+                acc.personal.push(device)
+            } else {
+                acc.company.push(device)
             }
-        })
+            return acc
+        }, { personal: [], company: []})
     }
 
     public async getUserDeviceLogs(user_id: string) {
