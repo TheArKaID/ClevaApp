@@ -20,10 +20,10 @@ export default class Device extends BaseModel {
   public deviceTypeId: string
 
   @column()
-  public ownerId: string
+  public ownerId: string | null
 
   @column()
-  public ownedBy: number
+  public ownedBy: number | null
 
   @column()
   public name: string
