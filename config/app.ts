@@ -232,3 +232,5 @@ export const profiler: ProfilerConfig = {
 |
 */
 export const validator: ValidatorConfig = {}
+
+export const appDerivedKey: string = Env.get('APP_DERIVED_KEY', appKey)

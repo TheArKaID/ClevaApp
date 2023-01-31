@@ -53,4 +53,10 @@ Route.group(async () => {
     Route.get('logs', 'DeviceController.getLog').as('user.log.get')
     Route.post('logs', 'DeviceController.sendLog').as('user.log.post')
   }).prefix('user').namespace('App/Controllers/Http/User')
+
+  // Route for external usage
+  Route.group(async () => {
+    Route.post('/device/provision', 'External/DeviceController.provision').as('ext.device.provision')
+  }).prefix('ext')
+
 }).prefix('api').middleware('auth:api')
