@@ -1,8 +1,5 @@
 import { appDerivedKey } from 'Config/app';
-import crypto from 'crypto'
-
-const algorithm = 'aes-128-ecb';
-const iv = null;
+import EncryptionService from './EncryptionService';
 
 export default class ProvisionService {
     /**
@@ -45,31 +42,13 @@ export default class ProvisionService {
      * @param sn
      */
     public async getDeviceKey(mac: string, sn: string) {
+        const encryptionService = new EncryptionService()
         const adk = await this.getAppDerivedKey()
         const dki = adk.index
         const key = adk.key
 
         const text = await this.getDeviceKeyData(mac, sn, dki)
 
-        return await this.encrypt(text, key)
-    }
-
-    public async encrypt(text: string, key: string) {
-        var cipher = crypto.createCipheriv(algorithm, key, iv);
-
-        var mystr = cipher.update(text, 'utf8', 'base64')
-        mystr += cipher.final('base64');
-
-        return mystr;
-    }
-
-    public async decrypt(text: string) {
-        const key = await (await this.getAppDerivedKey()).key
-        const algorithm = 'aes-128-ecb';
-        var cipher = crypto.createDecipheriv(algorithm, key, iv);
-        var mystr = cipher.update(text, 'base64', 'utf8')
-        mystr += cipher.final('utf8');
-
-        return mystr
+        return await encryptionService.encrypt(text, key)
     }
 }
