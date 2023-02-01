@@ -7,9 +7,9 @@ const companyService = new CompanyService()
 
 export default class DeviceService {
     // Get all devices
-    public async getAllDevices() {
-        const devices = await Device.all()
-        return devices
+    public async getAllDevices(user_id: string) {
+        const devices = await Device.query().preload('details', ($query) => $query.select(['key'])).preload('user').preload('company')
+        return this.formatDeviceList(devices, user_id)
     }
 
     // Get device by id
@@ -119,14 +119,14 @@ export default class DeviceService {
     public async revokeCompanyDevice(owner_id: string, device_id: string, company_id: string, user_to_revoke_id: string) {
         await companyService.isOwnedByUser(company_id, owner_id)
         const device = await this.isOwnedByCompany(device_id, company_id)
-        
+
         return await this.revokeDevice(device, user_to_revoke_id, company_id) ? true : 'Failed. User Not Found.'
     }
 
     // Revoke user access to device
     public async revokeDevice(device: Device, user_id: string, company_id: string | null = null) {
         const user = await User.find(user_id)
-        
+
         if (user) {
             const accessDevice = await AccessDevice.query().where({
                 userId: user_id,
@@ -151,14 +151,7 @@ export default class DeviceService {
             $query.select('device_id').from('access_devices').where('user_id', user_id)
         }).preload('details', ($query) => $query.select(['key'])).preload('user').preload('company')
 
-        return devices.reduce((acc: any, device: Device) => {
-            if (device.ownedBy === Device.ownedByUser) {
-                acc.personal.push(device)
-            } else {
-                acc.company.push(device)
-            }
-            return acc
-        }, { personal: [], company: []})
+        return this.formatDeviceList(devices, user_id)
     }
 
     public async getUserDeviceLogs(user_id: string) {
@@ -192,7 +185,7 @@ export default class DeviceService {
         for (const detail of device.details) {
             newData[detail.key] = data.data[detail.key] || ''
         }
-    
+
         const log = await device.related('logs').create({
             deviceId: device_id,
             userId: user_id,
@@ -202,5 +195,54 @@ export default class DeviceService {
 
 
         return log
+    }
+
+    /**
+     * Format Device List
+     * @param devices
+     * @param user_id
+     * 
+     * @returns {Object}
+     */
+    private formatDeviceList(devices: Device[], user_id: string) {
+        return devices.reduce((acc: any, device: Device) => {
+            const data = {
+                id: device.id,
+                name: device.name,
+                mac_address: device.macAddress,
+                details: device.details,
+                ownership: device.ownedBy === Device.ownedByUser ? {
+                    type: device.ownerType,
+                    is_owner: device.ownerId === user_id,
+                    name: device.user.name
+                } : {
+                    type: device.ownerType,
+                    is_owner: device.company.ownerId === user_id,
+                    name: device.company.name
+                }
+            }
+            if (device.ownedBy === Device.ownedByUser) {
+                acc.personal.push(data)
+            } else {
+                acc.company.push(data)
+            }
+            return acc
+        }, { personal: [], company: [] })
+    }
+
+    /**
+     * Clear device owner
+     * 
+     * @param device_id
+     * 
+     * @returns boolean
+     */
+    public async clearDeviceOwner(device_id: string) {
+        const device = await Device.findOrFail(device_id)
+        device.ownerId = null
+        device.ownedBy = null
+        await device.save()
+
+        return true
     }
 }

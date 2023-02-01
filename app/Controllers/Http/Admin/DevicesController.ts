@@ -4,8 +4,9 @@ import DeviceService from 'App/Services/DeviceService'
 const deviceService = new DeviceService()
 
 export default class DevicesController {
-    public async index({auth}: HttpContextContract) {
-        const devices = await deviceService.getDevicesByUser(auth.use('api').user?.id)
+    public async index({ auth }: HttpContextContract) {
+        const user_id = auth.use('api').user?.id as string
+        const devices = await deviceService.getAllDevices(user_id)
         return {
             status: 200,
             message: 'List of devices',
@@ -26,26 +27,14 @@ export default class DevicesController {
         }
     }
 
-    public async update({ request }: HttpContextContract) {
-        const id = request.input('id')
-        const data = {
-            name: request.input('name'),
-            mac_address: request.input('mac_address'),
-        }
-        const device = await deviceService.updateDevice(id, data)
-        return {
-            status: 200,
-            message: 'Device updated successfully',
-            data: device,
-        }
-    }
+    public async update({}: HttpContextContract) {}
 
     public async destroy({ request }: HttpContextContract) {
         const id = request.input('id')
-        const device = await deviceService.deleteDevice(id)
+        const device = await deviceService.clearDeviceOwner(id)
         return {
             status: 200,
-            message: 'Device deleted successfully',
+            message: 'Device owner cleared. Please re assign to use it.',
             data: device,
         }
     }
