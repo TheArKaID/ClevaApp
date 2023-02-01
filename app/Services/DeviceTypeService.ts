@@ -1,6 +1,6 @@
 import DeviceType from "App/Models/DeviceType"
 
-export default class DeviceService {
+export default class DeviceTypeService {
     // Get All Device Type
     public async getDeviceTypes() {
         const deviceTypes = await DeviceType.query().preload('deviceTypeDetail')
