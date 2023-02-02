@@ -16,7 +16,6 @@ export default class EncryptionService {
 
     public async decrypt(text: string, key: string) {
         key = key.substring(0, 16);
-        const algorithm = 'aes-128-ecb';
         var cipher = crypto.createDecipheriv(algorithm, key, iv);
         var mystr = cipher.update(text, 'base64', 'utf8')
         mystr += cipher.final('utf8');
