@@ -6,17 +6,27 @@ const provisionService = new ProvisionService()
 const deviceService = new DeviceService()
 
 export default class DevicesController {
-  public async index({}: HttpContextContract) {}
+  public async index({ }: HttpContextContract) { }
 
   public async provision({ request }: HttpContextContract) {
     // MAC 6 byte = 12 char, remove :
-    let mac = request.body().mac.replace(/:/g, '')
-    
+    let mac = request.body().mac
+
+    const device = await deviceService.getDeviceByMacAddress(mac)
+
+    // Return mac already registered
+    if (device) {
+      return {
+        status: 400,
+        message: 'Device already registered',
+      }
+    }
+
     // Get Serial Number
     const sn = await provisionService.generateSN()
 
     // Device Key
-    const dk = await provisionService.getDeviceKey(mac, sn)
+    const dk = await provisionService.getDeviceKey(mac.replace(/:/g, ''), sn)
 
     await deviceService.createDevice({
       mac_address: mac,
@@ -29,14 +39,18 @@ export default class DevicesController {
     })
 
     return {
-      sn: sn,
-      deviceKey: dk,
+      status: 200,
+      message: 'Device provisioned successfully',
+      data: {
+        sn: sn,
+        deviceKey: dk,
+      }
     }
   }
 
-  public async update({}: HttpContextContract) {}
+  public async update({ }: HttpContextContract) { }
 
-  public async destroy({}: HttpContextContract) {}
+  public async destroy({ }: HttpContextContract) { }
 
 
 }
