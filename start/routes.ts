@@ -33,7 +33,8 @@ Route.group(async () => {
   Route.post('/logout', 'AuthController.logout')
 
   Route.group(async () => {
-    Route.resource('/devices', 'DevicesController').apiOnly().as('admin.devices')
+    Route.post('/devices/grant', 'DevicesController.grant').as('admin.devices.grant')
+    Route.resource('/devices', 'DevicesController').apiOnly().only(['index', 'destroy', 'show']).as('admin.devices')
     Route.resource('/users', 'UsersController').apiOnly().as('admin.users')
     Route.resource('/device-types', 'DeviceTypesController').apiOnly().as('admin.device-types')
   }).prefix('admin').namespace('App/Controllers/Http/Admin')

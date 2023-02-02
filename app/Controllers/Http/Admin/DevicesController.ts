@@ -14,21 +14,6 @@ export default class DevicesController {
         }
     }
 
-    public async store({ request }: HttpContextContract) {
-        const data = {
-            name: request.input('name'),
-            mac_address: request.input('mac_address'),
-        }
-        const device = await deviceService.createDevice(data)
-        return {
-            status: 200,
-            message: 'Device created successfully',
-            data: device,
-        }
-    }
-
-    public async update({}: HttpContextContract) {}
-
     public async destroy({ request }: HttpContextContract) {
         const id = request.input('id')
         const device = await deviceService.clearDeviceOwner(id)
@@ -39,10 +24,29 @@ export default class DevicesController {
         }
     }
 
+    public async show({ params }:HttpContextContract) {
+        const id = params.id
+        const device = await deviceService.getDeviceWithAccessDevice(id)
+
+        if (typeof device !== 'string') {
+            return {
+                status: 200,
+                message: 'Device details',
+                data: device,
+            }
+        }
+
+        return {
+            status: 400,
+            message: device
+        }
+    }
+
     public async grant({ request }: HttpContextContract) {
-        const id = request.input('id')
-        const user_id = request.input('user_id')
-        const device = await deviceService.grantDevice(id, user_id)
+        const device_id = request.body().device_id
+        const user_id = request.body().user_id
+        let device = await deviceService.getDeviceById(device_id)
+        await deviceService.grantDevice(device, user_id)
 
         if (typeof device !== 'string') {
             return {

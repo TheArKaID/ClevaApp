@@ -2,6 +2,7 @@ import AccessDevice from "App/Models/AccessDevice"
 import Device from "App/Models/Device"
 import User from "App/Models/User"
 import CompanyService from "./CompanyService"
+import EncryptionService from "./EncryptionService"
 
 const companyService = new CompanyService()
 
@@ -14,8 +15,46 @@ export default class DeviceService {
 
     // Get device by id
     public async getDeviceById(id: string) {
-        const device = await Device.find(id)
+        const device = await Device.findOrFail(id)
         return device
+    }
+
+    /**
+     * Get Device List with it's owner and user access device
+     * @param deviceId
+     * @returns 
+     */
+    public async getDeviceWithAccessDevice(deviceId: string) {
+        const device = await Device.query().where('id', deviceId).preload('user').preload('accessDevices', ($query) => $query.preload('user')).firstOrFail()
+    
+        return {
+            id: device.id,
+            name: device.name,
+            mac_address: device.macAddress,
+            owned_by: device.ownedBy,
+            owner: device.ownedBy === Device.ownedByUser ? {
+                id: device.user.id,
+                name: device.user.name,
+                email: device.user.email
+            } : {
+                id: device.company.id,
+                name: device.company.name
+            },
+            user_access_devices: {
+                count: device.accessDevices.length,
+                data: device.accessDevices.map((accessDevice) => {
+                    return {
+                        id: accessDevice.id,
+                        user: {
+                            id: accessDevice.user.id,
+                            name: accessDevice.user.name,
+                            email: accessDevice.user.email
+                        }
+                    }
+                })
+            },
+        }
+        
     }
 
     // Get device by mac address
@@ -93,6 +132,7 @@ export default class DeviceService {
     public async grantDevice(device: Device, user_id: string, company_id: string | null = null) {
         const user = await User.find(user_id)
         if (user) {
+            const key = await this.generateAccessDeviceKey(user_id, device.key)
             const accessDevice = await AccessDevice.updateOrCreate({
                 userId: user_id,
                 companyId: company_id,
@@ -101,11 +141,16 @@ export default class DeviceService {
                 userId: user_id,
                 companyId: company_id,
                 deviceId: device.id,
-                key: device.key
+                key: key
             })
             return accessDevice
         }
         return false
+    }
+
+    public async generateAccessDeviceKey(user_id:string, device_key: string) {
+        const text = 'FF' + user_id + 'FF'
+        return await (new EncryptionService).encrypt(text, device_key)
     }
 
     // Revoke User Access from Personal Device
