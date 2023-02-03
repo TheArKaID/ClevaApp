@@ -37,6 +37,16 @@ export default class RegisterUserValidator {
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
       ),
     ]),
+    country_code: schema.string({}, [
+      rules.regex(
+        /^\+\d{1,3}$/,
+      ),
+    ]),
+    phone_number: schema.string({}, [
+      rules.regex(
+        /^\d{1,3}\d{8,15}$/,
+      ),
+    ]),
   })
 
   /**
@@ -58,6 +68,8 @@ export default class RegisterUserValidator {
     'email.maxLength': 'Email is too long',
     'email.unique': 'Email is already registered',
     'password.required': 'Password is required',
-    'password.regex': 'Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number and one special character'
+    'password.regex': 'Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number and one special character',
+    'phone_number.required': 'Phone number is required',
+    'phone_number.regex': 'Phone number must be in format +628xx1234567891',
   }
 }

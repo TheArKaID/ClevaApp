@@ -10,6 +10,8 @@ export default class extends BaseSeeder {
         email: 'admin@localhost',
         password: '12345678',
         name: faker.faker.name.fullName(),
+        country_code: '+62',
+        phone_number: '8571234567891',
         role: Role.ADMIN
       }}).build().create()
   }

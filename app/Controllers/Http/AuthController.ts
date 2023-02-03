@@ -26,6 +26,8 @@ export default class AuthController {
             name: data.name,
             email: data.email,
             password: data.password,
+            country_code: data.country_code,
+            phone_number: data.phone_number,
             role: Role.USER
          })
 
