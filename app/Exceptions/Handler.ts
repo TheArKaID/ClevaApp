@@ -39,14 +39,22 @@ export default class ExceptionHandler extends HttpExceptionHandler {
           'message': 'Failed. Resources not Found.'
         })
       }
+      
+      if (error.code == 'ERR_OSSL_EVP_BAD_DECRYPT') {
+        return ctx.response.send({
+          'status': 500,
+          'message': 'Failed, ' + error.reason
+        })
+      }
+
+      if (error.code === 'E_UNAUTHORIZED_ACCESS') {
+        return ctx.response.send({
+          'status': error.status,
+          'message': error.message.replace(error.code+': ', '')
+        })
+      }
     }
 
-    if (error.code == 'ERR_OSSL_EVP_BAD_DECRYPT') {
-      return ctx.response.send({
-        'status': 500,
-        'message': 'Failed, ' + error.reason
-      })
-    }
     /**
      * Forward rest of the exceptions to the parent class
      */

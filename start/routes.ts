@@ -37,7 +37,7 @@ Route.group(async () => {
     Route.resource('/devices', 'DevicesController').apiOnly().only(['index', 'destroy', 'show']).as('admin.devices')
     Route.resource('/users', 'UsersController').apiOnly().as('admin.users')
     Route.resource('/device-types', 'DeviceTypesController').apiOnly().as('admin.device-types')
-  }).prefix('admin').namespace('App/Controllers/Http/Admin')
+  }).prefix('admin').middleware('role:Admin').namespace('App/Controllers/Http/Admin')
   
   Route.group(async () => {
     // Route.get('/profile', 'UserController.profile')
