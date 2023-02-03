@@ -10,6 +10,7 @@ export default class extends BaseSeeder {
         email: 'admin@localhost',
         password: '12345678',
         name: faker.faker.name.fullName(),
+        role: 1
       }}).build().create()
   }
 }
