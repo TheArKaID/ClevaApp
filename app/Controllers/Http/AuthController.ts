@@ -1,5 +1,7 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import Role from 'App/Enums/Roles'
 import UserService from 'App/Services/UserServices'
+import RegisterUser from 'App/Validators/RegisterUserValidator'
 
 let userService = new UserService()
 
@@ -19,7 +21,13 @@ export default class AuthController {
 
     // register
     public async register({ request, auth }: HttpContextContract) {
-        const user = await userService.createUser({ ...request.all() })
+        let data = await request.validate(RegisterUser)
+        const user = await userService.createUser({ 
+            name: data.name,
+            email: data.email,
+            password: data.password,
+            role: Role.USER
+         })
 
         const token = await auth.use('api').login(user, {
             expiresIn: '10 days',
