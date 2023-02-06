@@ -1,6 +1,11 @@
 import DeviceType from "App/Models/DeviceType"
 
 export default class DeviceTypeService {
+    // Find device type by id
+    public async getDeviceTypeById(id: string) {
+        return await DeviceType.query().where('id', id).preload('deviceTypeDetail').first()
+    }
+
     // Get All Device Type
     public async getDeviceTypes() {
         const deviceTypes = await DeviceType.query().preload('deviceTypeDetail')
