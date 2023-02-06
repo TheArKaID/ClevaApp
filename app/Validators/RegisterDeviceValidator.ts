@@ -1,7 +1,7 @@
 import { schema, CustomMessages, rules } from '@ioc:Adonis/Core/Validator'
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 
-export default class CreateDeviceValidator {
+export default class RegisterDeviceValidator {
   constructor(protected ctx: HttpContextContract) { }
 
   /*
@@ -27,7 +27,8 @@ export default class CreateDeviceValidator {
     deviceTypeId: schema.string(),
     name: schema.string(),
     mac_address: schema.string({}, [
-      rules.unique({ table: 'devices', column: 'mac_address' }),
+      // Rule for mac address
+      rules.regex(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/)
     ]),
   })
 
@@ -42,5 +43,10 @@ export default class CreateDeviceValidator {
    * }
    *
    */
-  public messages: CustomMessages = {}
+  public messages: CustomMessages = {
+    'deviceTypeId.required': 'Device Type ID is required',
+    'name.required': 'Device name is required',
+    'mac_address.required': 'Mac address is required',
+    'mac_address.regex': 'Mac address is invalid',
+  }
 }

@@ -1,7 +1,7 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Device from 'App/Models/Device'
 import DeviceService from 'App/Services/DeviceService'
-import CreateDevice from 'App/Validators/CreateDeviceValidator'
+import RegisterDevice from 'App/Validators/RegisterDeviceValidator'
 import UpdateDevice from 'App/Validators/UpdateDeviceValidator'
 
 const deviceService = new DeviceService()
@@ -18,12 +18,12 @@ export default class DeviceController {
     }
 
     public async store({ auth, request }: HttpContextContract) {
-        let data = await request.validate(CreateDevice)
+        let data = await request.validate(RegisterDevice)
 
         data['owner_id'] = auth.use('api').user?.id
         data['owned_by'] = Device.ownedByUser
 
-        const deviceUser = await deviceService.createDevice(data)
+        const deviceUser = await deviceService.registerDeviceForUser(data)
 
         return {
             status: 200,
