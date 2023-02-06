@@ -3,13 +3,17 @@ import Device from "App/Models/Device"
 import User from "App/Models/User"
 import CompanyService from "./CompanyService"
 import EncryptionService from "./EncryptionService"
+import { Exception } from "@adonisjs/core/build/standalone"
+import DeviceTypeService from "./DeviceTypeService"
 
 const companyService = new CompanyService()
 
 export default class DeviceService {
     // Get all devices
     public async getAllDevices(user_id: string) {
-        const devices = await Device.query().preload('details', ($query) => $query.select(['key'])).preload('user').preload('company')
+        const devices = await Device.query().whereNotNull('device_type_id').preload('details', ($query) => {
+            $query.select(['key'])
+        }).preload('user').preload('company')
         return this.formatDeviceList(devices, user_id)
     }
 
@@ -66,6 +70,33 @@ export default class DeviceService {
     // Create device
     public async createDevice(data: any) {
         return await Device.create(data)
+    }
+
+    // Register device for user
+    public async registerDeviceForUser(data: any) {
+        const deviceTypeService = new DeviceTypeService
+
+        if (!(await deviceTypeService.getDeviceTypeById(data.deviceTypeId))) {
+            throw new Exception('Device type not found', 400, 'E_DEVICE_TYPE_NOT_FOUND')
+        }
+
+        let device = await this.getDeviceByMacAddress(data.mac_address)
+
+        if (!device) {
+            throw new Exception('No Device with given Mac Address exist', 400, 'E_DEVICE_NOT_FOUND')
+        }
+
+        if (device.ownerId) {
+            throw new Exception('Device already registered', 400, 'E_DEVICE_ALREADY_REGISTERED')
+        }
+
+        device.ownedBy = data.owned_by
+        device.ownerId = data.owner_id
+        device.deviceTypeId = data.deviceTypeId
+        device.name = data.name
+        await device.save()
+
+        return device
     }
 
     // Update device
