@@ -1,4 +1,4 @@
-import { schema, CustomMessages, rules } from '@ioc:Adonis/Core/Validator'
+import { schema, CustomMessages } from '@ioc:Adonis/Core/Validator'
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 
 export default class UpdateDeviceValidator {
@@ -24,10 +24,7 @@ export default class UpdateDeviceValidator {
    *    ```
    */
   public schema = schema.create({
-    name: schema.string.optional(),
-    mac_address: schema.string.optional({}, [
-      rules.unique({ table: 'devices', column: 'mac_address', whereNot: { id: this.ctx.params.id } }),
-    ]),
+    name: schema.string.optional()
   })
 
   /**
@@ -41,5 +38,7 @@ export default class UpdateDeviceValidator {
    * }
    *
    */
-  public messages: CustomMessages = {}
+  public messages: CustomMessages = {
+    'name.required': 'Name is required',
+  }
 }

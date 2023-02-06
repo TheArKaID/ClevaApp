@@ -27,7 +27,7 @@ export default class DeviceController {
 
         return {
             status: 200,
-            message: 'Device created',
+            message: 'Device Registered',
             data: deviceUser,
         }
     }
