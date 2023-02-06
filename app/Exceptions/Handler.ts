@@ -47,10 +47,10 @@ export default class ExceptionHandler extends HttpExceptionHandler {
         })
       }
 
-      if (error.code === 'E_UNAUTHORIZED_ACCESS') {
+      if (['E_UNAUTHORIZED_ACCESS', 'E_DEVICE_TYPE_NOT_FOUND', 'E_DEVICE_NOT_FOUND', 'E_DEVICE_ALREADY_REGISTERED'].includes(error.code)) {
         return ctx.response.send({
           'status': error.status,
-          'message': error.message.replace(error.code+': ', '')
+          'message': 'Failed. ' + error.message.replace(error.code+': ', '')
         })
       }
     }
