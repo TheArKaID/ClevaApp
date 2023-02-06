@@ -1,5 +1,6 @@
 import { appDerivedKey } from 'Config/app';
 import EncryptionService from './EncryptionService';
+import Device from 'App/Models/Device';
 
 export default class ProvisionService {
     /**
@@ -20,7 +21,15 @@ export default class ProvisionService {
     public async generateSN() {
         // Get SN from other source
         // SN 8 byte = 16 char
-        return await 'DCA' + Math.random().toString().substring(2, 15)
+
+        let sn: string
+        let csn = true
+        do {
+            sn = await 'DCA' + Math.random().toString().substring(2, 15)
+            csn = (await Device.findBy('serial_number', sn)) != null
+        } while (csn);
+
+        return sn
     }
 
     /**
