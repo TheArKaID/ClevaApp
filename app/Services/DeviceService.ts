@@ -113,6 +113,16 @@ export default class DeviceService {
         return await device.delete()
     }
 
+    // Unregister device
+    public async unregisterDevice(device_id: string, owner_id: string) {
+        const device = await this.isOwnedByUser(device_id, owner_id)
+        device.ownedBy = null
+        device.ownerId = null
+        device.deviceTypeId = null
+        device.name = ''
+        return device.save()
+    }
+
     // Create device for Company
     public async createCompanyDevice(user_id: string, data: any) {
         await companyService.isOwnedByUser(data.owner_id, user_id)

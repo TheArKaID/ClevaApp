@@ -16,7 +16,7 @@ export default class Device extends BaseModel {
   public id: string
 
   @column()
-  public deviceTypeId: string
+  public deviceTypeId: string | null
 
   @column()
   public ownerId: string | null

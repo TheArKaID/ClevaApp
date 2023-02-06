@@ -56,11 +56,10 @@ export default class DeviceController {
         const user_id = auth.use('api').user?.id as string
         const device_id = params.id
 
-        const device = await deviceService.deleteDevice(device_id, user_id)
+        await deviceService.unregisterDevice(device_id, user_id)
         return {
             status: 200,
-            message: 'Device deleted',
-            data: device,
+            message: 'Device unregistered'
         }
     }
 
