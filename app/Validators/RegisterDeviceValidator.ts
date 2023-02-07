@@ -26,9 +26,9 @@ export default class RegisterDeviceValidator {
   public schema = schema.create({
     deviceTypeId: schema.string(),
     name: schema.string(),
-    mac_address: schema.string({}, [
-      // Rule for mac address
-      rules.regex(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/)
+    data: schema.string({}, [
+      // Accept this format: ANY#30:B0:D0:63:C2:21#DCA123456789
+      rules.regex(/^(.[^/#]+)#([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})#([a-zA-Z0-9]+)$/),
     ]),
   })
 
@@ -46,7 +46,7 @@ export default class RegisterDeviceValidator {
   public messages: CustomMessages = {
     'deviceTypeId.required': 'Device Type ID is required',
     'name.required': 'Device name is required',
-    'mac_address.required': 'Mac address is required',
-    'mac_address.regex': 'Mac address is invalid',
+    'data.required': 'Device data is required',
+    'data.regex': 'Device data is not in the correct format',
   }
 }
