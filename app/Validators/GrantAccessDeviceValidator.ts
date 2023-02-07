@@ -1,7 +1,7 @@
 import { schema, CustomMessages, rules } from '@ioc:Adonis/Core/Validator'
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 
-export default class RegisterUserValidator {
+export default class GrantAccessDeviceValidator {
   constructor(protected ctx: HttpContextContract) {}
 
   /*
@@ -24,28 +24,16 @@ export default class RegisterUserValidator {
    *    ```
    */
   public schema = schema.create({
-    name: schema.string({}, [
-      rules.maxLength(255),
-    ]),
-    email: schema.string({}, [
+    // Email nullable
+    email: schema.string.optional({ trim: true }, [
       rules.email(),
-      rules.maxLength(255),
-      rules.unique({ table: 'users', column: 'email' }),
+      rules.exists({ table: 'users', column: 'email' }),
     ]),
-    password: schema.string({}, [
-      rules.regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-      ),
-    ]),
-    country_code: schema.string({}, [
-      rules.regex(
-        /^\+\d{1,3}$/,
-      ),
-    ]),
-    phone_number: schema.string({}, [
-      rules.regex(
-        /^\d{1,3}\d{8,15}$/,
-      ),
+    // Phone nullable
+    phone: schema.string.optional({}, [
+      rules.mobile({ strict: false, locale: ['id-ID'] }),
+      // Start with 0
+      rules.regex(/^0/),
     ]),
   })
 
@@ -61,17 +49,11 @@ export default class RegisterUserValidator {
    *
    */
   public messages: CustomMessages = {
-    'name.required': 'Name is required',
-    'name.maxLength': 'Name is too long',
     'email.required': 'Email is required',
-    'email.email': 'Email is invalid',
-    'email.maxLength': 'Email is too long',
-    'email.unique': 'Email is already registered',
-    'password.required': 'Password is required',
-    'password.regex': 'Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number and one special character',
-    'phone_number.required': 'Phone number is required',
-    'phone_number.regex': 'Phone number must be in format 81234567891',
-    'country_code.required': 'Country code is required',
-    'country_code.regex': 'Country code must start with + and followed by 1-3 digits',
+    'email.email': 'Email is not valid',
+    'email.exists': 'Email is not registered',
+    'phone.required': 'Phone is required',
+    'phone.mobile': 'Phone is not valid',
+    'phone.regex': 'Phone must start with 0',
   }
 }
