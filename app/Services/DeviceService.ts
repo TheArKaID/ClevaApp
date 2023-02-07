@@ -58,7 +58,49 @@ export default class DeviceService {
                 })
             },
         }
+    }
 
+    /**
+     * Get Device List with it's owner and user access device for User
+     * @param deviceId
+     * @returns 
+     */
+     public async getDeviceWithAccessDeviceForUser(deviceId: string, ownerId: string) {
+        const device = await Device.query().where((query) => {
+            query.where('owned_by', Device.ownedByUser).where('owner_id', ownerId)
+        }).orWhere((query) => {
+            query.where('owned_by', Device.ownedByCompany).preload('company', ($query) => {
+                $query.where('owner_id', ownerId)
+            })
+        }).where('id', deviceId).preload('user').preload('accessDevices', ($query) => $query.preload('user')).firstOrFail()
+
+        return {
+            id: device.id,
+            name: device.name,
+            mac_address: device.macAddress,
+            owned_by: device.ownedBy,
+            owner: device.ownedBy === Device.ownedByUser ? {
+                id: device.user.id,
+                name: device.user.name,
+                email: device.user.email
+            } : {
+                id: device.company.id,
+                name: device.company.name
+            },
+            user_access_devices: {
+                count: device.accessDevices.length,
+                data: device.accessDevices.map((accessDevice) => {
+                    return {
+                        id: accessDevice.id,
+                        user: {
+                            id: accessDevice.user.id,
+                            name: accessDevice.user.name,
+                            email: accessDevice.user.email
+                        }
+                    }
+                })
+            },
+        }
     }
 
     // Get device by mac address
@@ -155,7 +197,7 @@ export default class DeviceService {
     // Create device for Company
     public async createCompanyDevice(user_id: string, data: any) {
         await companyService.isOwnedByUser(data.owner_id, user_id)
-        return await this.createDevice(data)
+        return await this.registerDeviceForUser(data)
     }
 
     // Update device
@@ -184,31 +226,39 @@ export default class DeviceService {
     }
 
     // Grant User to Access Personal Device
-    public async grantPersonalDevice(owner_id: string, device_id: string, user_id: string) {
+    public async grantPersonalDevice(owner_id: string, device_id: string, identifier_id: string) {
         const device = await this.isOwnedByUser(device_id, owner_id)
 
-        return await this.grantDevice(device, user_id) ? true : 'Failed. User Not Found.'
+        const accessDevice = await this.grantDevice(device, identifier_id)
+        return accessDevice ?? 'Failed. User Not Found.'
     }
 
     // Grant User to Access Company Device
-    public async grantCompanyDevice(owner_id: string, device_id: string, company_id: string, user_to_grant_id: string) {
+    public async grantCompanyDevice(owner_id: string, device_id: string, company_id: string, identifier_id: string) {
         await companyService.isOwnedByUser(company_id, owner_id)
         const device = await this.isOwnedByCompany(device_id, company_id)
 
-        return await this.grantDevice(device, user_to_grant_id, company_id) ? true : 'Failed. User Not Found.'
+        const accessDevice = await this.grantDevice(device, identifier_id, company_id)
+        return accessDevice ?? 'Failed. User Not Found.'
     }
 
     // Grant user access to device
-    public async grantDevice(device: Device, user_id: string, company_id: string | null = null) {
-        const user = await User.find(user_id)
+    public async grantDevice(device: Device, identifier_id: string, company_id: string | null = null) {
+        // Check if identifier_id is number
+        if (identifier_id.match(/^[0-9]+$/)) {
+            identifier_id = await this.formatPhoneNumber(identifier_id)
+        }
+        
+        const user = await User.query().where('email', identifier_id).orWhere('phone_number', identifier_id).first()
+
         if (user) {
-            const key = await this.generateAccessDeviceKey(user_id, device.key)
+            const key = await this.generateAccessDeviceKey(user.id, device.key)
             const accessDevice = await AccessDevice.updateOrCreate({
-                userId: user_id,
+                userId: user.id,
                 companyId: company_id,
                 deviceId: device.id,
             }, {
-                userId: user_id,
+                userId: user.id,
                 companyId: company_id,
                 deviceId: device.id,
                 key: key
@@ -216,6 +266,16 @@ export default class DeviceService {
             return accessDevice
         }
         return false
+    }
+
+    // Format phone number
+    public async formatPhoneNumber(phone_number: string) {
+        // Remove 0
+        if (phone_number.startsWith('0')) {
+            phone_number = phone_number.replace('0', '')
+        }
+
+        return phone_number
     }
 
     public async generateAccessDeviceKey(user_id: string, device_key: string) {

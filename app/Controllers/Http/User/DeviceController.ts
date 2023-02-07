@@ -1,6 +1,7 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Device from 'App/Models/Device'
 import DeviceService from 'App/Services/DeviceService'
+import GrantAccessDeviceValidator from 'App/Validators/GrantAccessDeviceValidator'
 import RegisterDevice from 'App/Validators/RegisterDeviceValidator'
 import UpdateDevice from 'App/Validators/UpdateDeviceValidator'
 
@@ -32,6 +33,17 @@ export default class DeviceController {
         }
     }
 
+    public async show({ params, auth }: HttpContextContract) {
+        const device_id = params.id
+        const owner_id = auth.use('api').user?.id as string
+        const device = await deviceService.getDeviceWithAccessDeviceForUser(device_id, owner_id)
+
+        return {
+            status: 200,
+            message: 'Device found',
+            data: device
+        }
+    }
     public async update({ request, params, auth }: HttpContextContract) {
         let data = await request.validate(UpdateDevice)
 
@@ -64,10 +76,11 @@ export default class DeviceController {
     }
 
     public async grant({ request, params, auth }: HttpContextContract) {
+        let data = await request.validate(GrantAccessDeviceValidator)
+
         const device_id = params.id
-        const user_id = request.input('user_id')
         const id = auth.use('api').user?.id as string
-        const device = await deviceService.grantPersonalDevice(id, device_id, user_id)
+        const device = await deviceService.grantPersonalDevice(id, device_id, data.email ?? data.phone ?? '')
 
         if (typeof device !== 'string') {
             return {

@@ -2,6 +2,8 @@ import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Device from 'App/Models/Device'
 import CompanyService from 'App/Services/CompanyService'
 import DeviceService from 'App/Services/DeviceService'
+import GrantAccessDeviceValidator from 'App/Validators/GrantAccessDeviceValidator'
+import RegisterDeviceValidator from 'App/Validators/RegisterDeviceValidator'
 
 const deviceService = new DeviceService()
 const companyService = new CompanyService()
@@ -25,13 +27,13 @@ export default class CompanyDeviceController {
     }
 
     public async store({ params, request, auth }: HttpContextContract) {
-        const data = {
-            name: request.input('name'),
-            mac_address: request.input('mac_address'),
-            owner_id: params.company_id,
-            owned_by: Device.ownedByCompany,
-        }
+        let data = await request.validate(RegisterDeviceValidator)
+        
+        data['owner_id'] = params.company_id
+        data['owned_by'] = Device.ownedByCompany
+
         const user_id = auth.use('api').user?.id as string
+        console.table(data)
         const device = await deviceService.createCompanyDevice(user_id, data)
         return {
             status: 200,
@@ -76,12 +78,13 @@ export default class CompanyDeviceController {
     }
 
     public async grant({ request, params, auth }: HttpContextContract) {
+        let data = await request.validate(GrantAccessDeviceValidator)
+
         const device_id = params.id
-        const user_id = request.input('user_id')
         const owner_id = auth.use('api').user?.id as string
         const company_id = params.company_id
 
-        const device = await deviceService.grantCompanyDevice(owner_id, device_id, company_id, user_id)
+        const device = await deviceService.grantCompanyDevice(owner_id, device_id, company_id, data.email ?? data.phone ?? '')
 
         if (typeof device !== 'string') {
             return {
