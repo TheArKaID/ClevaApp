@@ -30,7 +30,7 @@ export default class DeviceService {
      */
     public async getDeviceWithAccessDevice(deviceId: string) {
         const device = await Device.query().where('id', deviceId).preload('user').preload('accessDevices', ($query) => $query.preload('user')).firstOrFail()
-    
+
         return {
             id: device.id,
             name: device.name,
@@ -58,13 +58,23 @@ export default class DeviceService {
                 })
             },
         }
-        
+
     }
 
     // Get device by mac address
     public async getDeviceByMacAddress(macAddress: string) {
         const device = await Device.findBy('mac_address', macAddress)
         return device
+    }
+
+    // Get device by serial number
+    public async getDeviceBySerialNumber(serialNumber: string) {
+        return await Device.findBy('serial_number', serialNumber)
+    }
+
+    // Get device by mac address and serial number
+    public async getDeviceByMacAddressAndSerialNumber(macAddress: string, serialNumber: string) {
+        return await Device.query().where('mac_address', macAddress).andWhere('serial_number', serialNumber).first()
     }
 
     // Create device
@@ -80,10 +90,18 @@ export default class DeviceService {
             throw new Exception('Device type not found', 400, 'E_DEVICE_TYPE_NOT_FOUND')
         }
 
-        let device = await this.getDeviceByMacAddress(data.mac_address)
+        let regisData = await this.formatRegisterDeviceData(data)
 
+        let device = await this.getDeviceByMacAddressAndSerialNumber(regisData.mac, regisData.sn)
         if (!device) {
-            throw new Exception('No Device with given Mac Address exist', 400, 'E_DEVICE_NOT_FOUND')
+            throw new Exception('No Device with given Mac Address and Serial Number exist', 400, 'E_DEVICE_NOT_FOUND')
+        }
+
+        let decrypted = await (new EncryptionService).decrypt(regisData.aes, device.key)
+        let formatted = await this.formatRegisterDeviceData({data: 'AESDUMMY#' + decrypted})
+
+        if (formatted.sn !== regisData.sn || formatted.mac !== regisData.mac) {
+            throw new Exception('Invalid AES key', 400, 'E_INVALID_AES_KEY')
         }
 
         if (device.ownerId) {
@@ -97,6 +115,17 @@ export default class DeviceService {
         await device.save()
 
         return device
+    }
+
+    // Format Device Data for registration
+    public async formatRegisterDeviceData(data: any) {
+        const splitData = data.data.split('#')
+
+        return {
+            aes: splitData[0],
+            mac: splitData[1],
+            sn: splitData[2],
+        }
     }
 
     // Update device
@@ -189,7 +218,7 @@ export default class DeviceService {
         return false
     }
 
-    public async generateAccessDeviceKey(user_id:string, device_key: string) {
+    public async generateAccessDeviceKey(user_id: string, device_key: string) {
         const text = 'FF' + user_id + 'FF'
         return await (new EncryptionService).encrypt(text, device_key)
     }
