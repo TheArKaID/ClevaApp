@@ -41,10 +41,4 @@ export default class AccessDevice extends BaseModel {
   public static assignUuid(accessDevice: AccessDevice) {
     accessDevice.id = uuidv4()
   }
-
-  @beforeSave()
-  public static assignKey(accessDevice: AccessDevice) {
-    let encryptor = Encryption.child({ secret: accessDevice.key })
-    accessDevice.key = encryptor.encrypt(accessDevice.userId + ':' + accessDevice.deviceId)
-  }
 }
