@@ -28,7 +28,7 @@ export default class RegisterDeviceValidator {
     name: schema.string(),
     data: schema.string({}, [
       // Accept this format: ANY#30:B0:D0:63:C2:21#DCA123456789
-      rules.regex(/^(.[^/#]+)#([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})#([a-zA-Z0-9]+)$/),
+      rules.regex(/^(.[^#]+)#([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})#([a-zA-Z0-9]+)$/),
     ]),
   })
 
