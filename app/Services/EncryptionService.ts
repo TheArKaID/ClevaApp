@@ -7,9 +7,9 @@ export default class EncryptionService {
         key = key.substring(0, 16)
         let thekey = await this.atohex(key)
         const iv = null
-        var cipher = crypto.createCipheriv(algorithm, thekey, iv)
+        let cipher = crypto.createCipheriv(algorithm, thekey, iv)
         cipher.setAutoPadding(true)
-        var mystr = cipher.update(await this.atohex(text))
+        let mystr = cipher.update(await this.atohex(text))
         return Buffer.concat([mystr, cipher.final()]).toString('base64')
     }
 
@@ -18,14 +18,14 @@ export default class EncryptionService {
         let thekey = await this.atohex(key)
         let thedeciper = await this.b64tohex(cipher)
         const iv = null
-        var decipher = crypto.createDecipheriv(algorithm, thekey, iv)
+        let decipher = crypto.createDecipheriv(algorithm, thekey, iv)
         decipher.setAutoPadding(false)
-        var mystr = decipher.update(thedeciper).toString('utf8')
+        let mystr = decipher.update(thedeciper).toString('hex')
 
-        // Remove padding
-        mystr = mystr.replace(/[\x00-\x1F\x80-\xFF]/g, '')
+        // For replacing padding of 08 and ff with empty string
+        mystr = mystr.replace(/(08|ff)+$/g, '')
         
-        return mystr
+        return await this.hextoutf8(mystr)
     }
 
     // Base64 to hex
@@ -36,5 +36,10 @@ export default class EncryptionService {
     // ASCII to hex
     public async atohex(str: string) {
         return Buffer.from(str, 'ascii')
+    }
+
+    // Hex to UTF8
+    public async hextoutf8(str: string) {
+        return Buffer.from(str, 'hex').toString('utf8')
     }
 }
