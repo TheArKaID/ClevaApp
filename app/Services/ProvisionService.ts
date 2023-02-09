@@ -39,7 +39,7 @@ export default class ProvisionService {
      * @param dki
      */
     public async getDeviceKeyData(mac: string, sn: string, dki: string) {
-        let dkd = mac + sn + dki
+        let dkd = mac + '#' + sn + '#' + dki
 
         return dkd
     }
