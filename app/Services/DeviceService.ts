@@ -5,6 +5,7 @@ import CompanyService from "./CompanyService"
 import EncryptionService from "./EncryptionService"
 import { Exception } from "@adonisjs/core/build/standalone"
 import DeviceTypeService from "./DeviceTypeService"
+import { appDerivedKey } from "Config/app"
 
 const companyService = new CompanyService()
 
@@ -139,10 +140,10 @@ export default class DeviceService {
             throw new Exception('No Device with given Mac Address and Serial Number exist', 400, 'E_DEVICE_NOT_FOUND')
         }
 
-        let decrypted = await (new EncryptionService).decrypt(regisData.aes, device.key)
+        let decrypted = await (new EncryptionService).decrypt(regisData.aes, appDerivedKey)
         let formatted = await this.formatRegisterDeviceData({data: 'AESDUMMY#' + decrypted})
 
-        if (formatted.sn !== regisData.sn || formatted.mac !== regisData.mac) {
+        if (formatted.sn !== regisData.sn || formatted.mac !== regisData.mac.replace(/:/g, '')) {
             throw new Exception('Invalid AES key', 400, 'E_INVALID_AES_KEY')
         }
 
