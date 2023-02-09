@@ -285,27 +285,32 @@ export default class DeviceService {
     }
 
     // Revoke User Access from Personal Device
-    public async revokePersonalDevice(owner_id: string, device_id: string, user_id: string) {
+    public async revokePersonalDevice(owner_id: string, device_id: string, identifier_id: string) {
         const device = await this.isOwnedByUser(device_id, owner_id)
 
-        return await this.revokeDevice(device, user_id) ? true : 'Failed. User Not Found.'
+        return await this.revokeDevice(device, identifier_id) ? true : 'Failed. User Not Found.'
     }
 
     // Revoke User Access from Company Device
-    public async revokeCompanyDevice(owner_id: string, device_id: string, company_id: string, user_to_revoke_id: string) {
+    public async revokeCompanyDevice(owner_id: string, device_id: string, company_id: string, identifier_id: string) {
         await companyService.isOwnedByUser(company_id, owner_id)
         const device = await this.isOwnedByCompany(device_id, company_id)
 
-        return await this.revokeDevice(device, user_to_revoke_id, company_id) ? true : 'Failed. User Not Found.'
+        return await this.revokeDevice(device, identifier_id, company_id) ? true : 'Failed. User Not Found.'
     }
 
     // Revoke user access to device
-    public async revokeDevice(device: Device, user_id: string, company_id: string | null = null) {
-        const user = await User.find(user_id)
+    public async revokeDevice(device: Device, identifier_id: string, company_id: string | null = null) {
+        // Check if identifier_id is number
+        if (identifier_id.match(/^[0-9]+$/)) {
+            identifier_id = await this.formatPhoneNumber(identifier_id)
+        }
+        
+        const user = await User.query().where('email', identifier_id).orWhere('phone_number', identifier_id).first()
 
         if (user) {
             const accessDevice = await AccessDevice.query().where({
-                userId: user_id,
+                userId: user.id,
                 companyId: company_id,
                 deviceId: device.id,
             }).firstOrFail()

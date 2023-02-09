@@ -4,6 +4,7 @@ import CompanyService from 'App/Services/CompanyService'
 import DeviceService from 'App/Services/DeviceService'
 import GrantAccessDeviceValidator from 'App/Validators/GrantAccessDeviceValidator'
 import RegisterDeviceValidator from 'App/Validators/RegisterDeviceValidator'
+import RevokeAccessDeviceValidator from 'App/Validators/RevokeAccessDeviceValidator'
 
 const deviceService = new DeviceService()
 const companyService = new CompanyService()
@@ -33,7 +34,7 @@ export default class CompanyDeviceController {
         data['owned_by'] = Device.ownedByCompany
 
         const user_id = auth.use('api').user?.id as string
-        console.table(data)
+
         const device = await deviceService.createCompanyDevice(user_id, data)
         return {
             status: 200,
@@ -100,12 +101,13 @@ export default class CompanyDeviceController {
     }
 
     public async revoke({ request, params, auth }: HttpContextContract) {
+        let data = await request.validate(RevokeAccessDeviceValidator)
+
         const device_id = params.id
-        const user_id = request.input('user_id')
         const owner_id = auth.use('api').user?.id as string
         const company_id = params.company_id
 
-        const device = await deviceService.revokeCompanyDevice(owner_id, device_id, company_id, user_id)
+        const device = await deviceService.revokeCompanyDevice(owner_id, device_id, company_id, data.email ?? data.phone ?? '')
 
         if (typeof device !== 'string') {
             return {

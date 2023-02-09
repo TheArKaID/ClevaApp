@@ -3,6 +3,7 @@ import Device from 'App/Models/Device'
 import DeviceService from 'App/Services/DeviceService'
 import GrantAccessDeviceValidator from 'App/Validators/GrantAccessDeviceValidator'
 import RegisterDevice from 'App/Validators/RegisterDeviceValidator'
+import RevokeAccessDeviceValidator from 'App/Validators/RevokeAccessDeviceValidator'
 import UpdateDevice from 'App/Validators/UpdateDeviceValidator'
 
 const deviceService = new DeviceService()
@@ -97,11 +98,12 @@ export default class DeviceController {
     }
 
     public async revoke({ request, params, auth }: HttpContextContract) {
+        let data = await request.validate(RevokeAccessDeviceValidator)
+
         const device_id = params.id
-        const user_id = request.input('user_id')
         const owner_id = auth.use('api').user?.id as string
 
-        const device = await deviceService.revokePersonalDevice(owner_id, device_id, user_id)
+        const device = await deviceService.revokePersonalDevice(owner_id, device_id,  data.email ?? data.phone ?? '')
 
         if (typeof device !== 'string') {
             return {
