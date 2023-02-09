@@ -47,8 +47,7 @@ export default class CompanyDeviceController {
         const company_id = params.company_id
         const user_id = auth.use('api').user?.id as string
         const data = {
-            name: request.input('name'),
-            mac_address: request.input('mac_address'),
+            name: request.input('name')
         }
         const device = await deviceService.updateCompanyDevice(user_id, device_id, company_id, data)
         let res = {
@@ -72,7 +71,7 @@ export default class CompanyDeviceController {
         const device = await deviceService.deleteCompanyDevice(user_id, device_id, company_id)
         return {
             status: 200,
-            message: 'Device deleted',
+            message: 'Device removed',
             data: device,
         }
     }
