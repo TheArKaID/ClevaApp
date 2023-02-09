@@ -52,7 +52,6 @@ test.group('Users device', () => {
     provisionReq.assertStatus(200)
     device.id = provisionReq.body().data.id
     device.sn = provisionReq.body().data.sn
-    // console.table(provisionReq.body().data)
     device.data = provisionReq.body().data.deviceKey + '#' + device.mac + '#' + device.sn
   })
 
@@ -66,10 +65,6 @@ test.group('Users device', () => {
       deviceTypeId: device.device_type_id,
       data: device.data
     }).header('Authorization', `Bearer ${token}`).send()
-
-    // console.table(device.data)
-    // console.table(await Device.first())
-    // console.log(response.body())
 
     response.assertStatus(200)
 
