@@ -1,10 +1,9 @@
 import { DateTime } from 'luxon'
-import { BaseModel, beforeCreate, beforeSave, BelongsTo, belongsTo, column } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, beforeCreate, BelongsTo, belongsTo, column } from '@ioc:Adonis/Lucid/Orm'
 import { v4 as uuidv4 } from 'uuid'
 import User from './User'
 import Company from './Company'
 import Device from './Device'
-import Encryption from '@ioc:Adonis/Core/Encryption'
 
 export default class AccessDevice extends BaseModel {
   @column({ isPrimary: true })

@@ -1,8 +1,5 @@
 import { test } from '@japa/runner'
 import Route from '@ioc:Adonis/Core/Route'
-import DeviceType from 'App/Models/DeviceType'
-import EncryptionService from 'App/Services/EncryptionService'
-import Device from 'App/Models/Device'
 
 test.group('Users device', () => {
   // const endpoint = Route.makeUrl('user.devices.store', { user_id: 1 })
