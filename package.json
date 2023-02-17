@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "node ace serve --watch",
     "build": "node ace build --production",
+    "build-production": "npm run build && cp .env build/.env && pm2 reload ClevaApp",
     "start": "node server.js",
     "lint": "eslint . --ext=.ts",
     "format": "prettier --write ."
