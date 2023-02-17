@@ -11,11 +11,9 @@ const companyService = new CompanyService()
 
 export default class DeviceService {
     // Get all devices
-    public async getAllDevices(user_id: string) {
-        const devices = await Device.query().whereNotNull('device_type_id').preload('details', ($query) => {
-            $query.select(['key'])
-        }).preload('user').preload('company')
-        return this.formatDeviceList(devices, user_id)
+    public async getAllDevices() {
+        const devices = await Device.query().preload('user').preload('company')
+        return this.formatAllDeviceList(devices)
     }
 
     // Get device by id
@@ -409,6 +407,33 @@ export default class DeviceService {
             }
             return acc
         }, { personal: [], company: [] })
+    }
+
+    /**
+     * Format All Device List
+     * 
+     * @param devices
+     * 
+     * @returns {Object}
+     */
+    private async formatAllDeviceList(devices: Device[]) {
+        return devices.map(device => {
+            return {
+                id: device.id,
+                name: device.name,
+                mac_address: device.macAddress,
+                details: device.details,
+                ownership: device.ownerId ? (device.ownedBy === Device.ownedByUser ? {
+                    type: device.ownerType,
+                    name: device.user.name,
+                    id: device.ownerId
+                } : {
+                    type: device.ownerType,
+                    name: device.company.name,
+                    id: device.company.ownerId
+                }) : null
+            }
+        })
     }
 
     /**

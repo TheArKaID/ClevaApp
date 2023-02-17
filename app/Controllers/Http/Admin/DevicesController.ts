@@ -4,9 +4,8 @@ import DeviceService from 'App/Services/DeviceService'
 const deviceService = new DeviceService()
 
 export default class DevicesController {
-    public async index({ auth }: HttpContextContract) {
-        const user_id = auth.use('api').user?.id as string
-        const devices = await deviceService.getAllDevices(user_id)
+    public async index({ }: HttpContextContract) {
+        const devices = await deviceService.getAllDevices()
         return {
             status: 200,
             message: 'List of devices',
