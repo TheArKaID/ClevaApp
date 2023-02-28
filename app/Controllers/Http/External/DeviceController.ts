@@ -43,7 +43,7 @@ export default class DevicesController {
       message: 'Device provisioned successfully',
       data: {
         sn: sn,
-        deviceKey: dk,
+        deviceKey: dk.substring(0, 16),
       }
     }
   }
