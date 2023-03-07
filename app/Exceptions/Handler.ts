@@ -39,7 +39,7 @@ export default class ExceptionHandler extends HttpExceptionHandler {
           'message': 'Failed. Resources not Found.'
         })
       }
-      
+
       if (error.code == 'ERR_OSSL_EVP_BAD_DECRYPT') {
         return ctx.response.send({
           'status': 500,
@@ -47,10 +47,18 @@ export default class ExceptionHandler extends HttpExceptionHandler {
         })
       }
 
-      if (['E_UNAUTHORIZED_ACCESS', 'E_DEVICE_TYPE_NOT_FOUND', 'E_DEVICE_NOT_FOUND', 'E_DEVICE_ALREADY_REGISTERED'].includes(error.code)) {
+      if (['E_UNAUTHORIZED_ACCESS', 'E_DEVICE_TYPE_NOT_FOUND', 'E_DEVICE_NOT_FOUND', 'E_DEVICE_ALREADY_REGISTERED', 'E_INVALID_AUTH_UID', 'E_INVALID_AUTH_PASSWORD'].includes(error.code)) {
         return ctx.response.send({
           'status': error.status,
-          'message': 'Failed. ' + error.message.replace(error.code+': ', '')
+          'message': 'Failed. ' + error.message.replace(error.code + ': ', '')
+        })
+      }
+
+      if (['E_VALIDATION_FAILURE'].includes(error.code)) {
+        return ctx.response.send({
+          'status': error.status,
+          'message': 'Failed. ' + error.message.replace(error.code + ': ', ''),
+          'errors': error.messages.errors
         })
       }
     }
@@ -58,7 +66,10 @@ export default class ExceptionHandler extends HttpExceptionHandler {
     /**
      * Forward rest of the exceptions to the parent class
      */
-    return super.handle(error, ctx)
+    return ctx.response.send({
+      'status': error.status ?? 500,
+      'message': 'Failed. Server Error. '
+    })
   }
 
 }
