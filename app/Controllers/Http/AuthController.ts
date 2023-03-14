@@ -50,8 +50,16 @@ export default class AuthController {
          }
     }
 
-    public async refresh({ auth }: HttpContextContract) {
-        const token = await auth.use('api').generate(auth.use('api').user!, {
+    public async refresh({ auth, request }: HttpContextContract) {
+        auth.use('api').authenticate()
+        // Get the refresh token from the request header
+        const refreshToken = request.header('Authorization')
+        // Check if token is valid
+        
+        const user = await userService.refreshToken(refreshToken ?? '')
+
+        // Generate a new token
+        const token = await auth.use('api').generate(user, {
             expiresIn: '1 hour',
         })
         return {
@@ -60,4 +68,5 @@ export default class AuthController {
             data: token.toJSON(),
         }
     }
+
 }
