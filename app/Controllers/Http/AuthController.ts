@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Role from 'App/Enums/Roles'
 import UserService from 'App/Services/UserServices'
@@ -10,7 +11,7 @@ export default class AuthController {
         const email = request.input('email')
         const password = request.input('password')
         const token = await auth.use('api').attempt(email, password, {
-            expiresIn: '10 days',
+            expiresIn: '1 hour',
         })
         return {
             status: 200,
@@ -47,5 +48,16 @@ export default class AuthController {
             status: 200,
             message: 'Logout success'
          }
+    }
+
+    public async refresh({ auth }: HttpContextContract) {
+        const token = await auth.use('api').generate(auth.use('api').user!, {
+            expiresIn: '1 hour',
+        })
+        return {
+            status: 200,
+            message: 'Refresh success',
+            data: token.toJSON(),
+        }
     }
 }
