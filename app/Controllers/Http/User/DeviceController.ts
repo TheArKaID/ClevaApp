@@ -1,12 +1,14 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Device from 'App/Models/Device'
 import DeviceService from 'App/Services/DeviceService'
+import DeviceTypeService from 'App/Services/DeviceTypeService'
 import GrantAccessDeviceValidator from 'App/Validators/GrantAccessDeviceValidator'
 import RegisterDevice from 'App/Validators/RegisterDeviceValidator'
 import RevokeAccessDeviceValidator from 'App/Validators/RevokeAccessDeviceValidator'
 import UpdateDevice from 'App/Validators/UpdateDeviceValidator'
 
 const deviceService = new DeviceService()
+const deviceTypeService = new DeviceTypeService()
 
 export default class DeviceController {
     public async index({ auth }: HttpContextContract) {
@@ -141,6 +143,28 @@ export default class DeviceController {
             status: 200,
             message: 'Logged',
             data: log,
+        }
+    }
+
+    public async getDeviceType({ }: HttpContextContract) {
+        const deviceTypes = await deviceTypeService.getDeviceTypes()
+        return {
+            status: 200,
+            message: 'List of device types',
+            data: deviceTypes.map(deviceType => {
+                return {
+                    "id": deviceType.id,
+                    "name": deviceType.name,
+                    "details": deviceType.deviceTypeDetail.map(detail => {
+                        return {
+                            "id": detail.id,
+                            "key": detail.key
+                        }
+                    }),
+                    "characteristics": deviceType.characteristics,
+                    "created_at": deviceType.createdAt,
+                }
+            })
         }
     }
 }

@@ -19,7 +19,6 @@
 */
 
 import Route from '@ioc:Adonis/Core/Route'
-
 Route.get('/', async () => {
   return { hello: 'world' }
 })
@@ -44,6 +43,8 @@ Route.group(async () => {
     // Route.get('/profile', 'UserController.profile')
     // Route.put('/profile', 'UserController.updateProfile')
     // Route.put('/password', 'UserController.updatePassword')
+    Route.get('/device-types', 'DeviceController.getDeviceType').as('user.device-types')
+
     Route.resource('devices', 'DeviceController').apiOnly().as('user.devices')
     Route.post('/devices/:id/grant', 'DeviceController.grant').as('user.devices.grant')
     Route.post('/devices/:id/revoke', 'DeviceController.revoke').as('user.devices.revoke')
