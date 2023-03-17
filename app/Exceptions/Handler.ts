@@ -47,7 +47,7 @@ export default class ExceptionHandler extends HttpExceptionHandler {
         })
       }
 
-      if (['E_UNAUTHORIZED_ACCESS', 'E_DEVICE_TYPE_NOT_FOUND', 'E_DEVICE_NOT_FOUND', 'E_DEVICE_ALREADY_REGISTERED', 'E_INVALID_AUTH_UID', 'E_INVALID_AUTH_PASSWORD'].includes(error.code)) {
+      if (['E_UNAUTHORIZED_ACCESS', 'E_DEVICE_TYPE_NOT_FOUND', 'E_DEVICE_NOT_FOUND', 'E_DEVICE_ALREADY_REGISTERED', 'E_INVALID_AUTH_UID', 'E_INVALID_AUTH_PASSWORD', 'E_INVALID_AES_KEY'].includes(error.code)) {
         return ctx.response.send({
           'status': error.status,
           'message': 'Failed. ' + error.message.replace(error.code + ': ', '')
@@ -68,7 +68,7 @@ export default class ExceptionHandler extends HttpExceptionHandler {
      */
     return ctx.response.send({
       'status': error.status ?? 500,
-      'message': 'Failed. Server Error. '
+      'message': error.message
     })
   }
 
