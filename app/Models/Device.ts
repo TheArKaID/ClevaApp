@@ -33,7 +33,11 @@ export default class Device extends BaseModel {
   @column()
   public serialNumber: string
 
-  @column()
+  @column({
+    serialize: (value: string) => {
+      return value.substring(0, 16)
+    }
+  })
   public key: string
 
   @column.dateTime({ autoCreate: true })
