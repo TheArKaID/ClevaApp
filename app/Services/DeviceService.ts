@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import AccessDevice from "App/Models/AccessDevice"
 import Device from "App/Models/Device"
 import User from "App/Models/User"
@@ -328,7 +329,7 @@ export default class DeviceService {
             })
         }).orWhereIn('id', ($query) => {
             $query.select('device_id').from('access_devices').where('user_id', user_id)
-        }).preload('details', ($query) => $query.select(['key'])).preload('user').preload('company')
+        }).preload('deviceType').preload('details', ($query) => $query.select(['key'])).preload('user').preload('company')
 
         return this.formatDeviceList(devices, user_id)
     }
@@ -398,6 +399,10 @@ export default class DeviceService {
                     type: device.ownerType,
                     is_owner: device.company.ownerId === user_id,
                     name: device.company.name
+                },
+                type: {
+                    name: device.deviceType.name,
+                    characteristics: device.deviceType.characteristics
                 }
             }
             if (device.ownedBy === Device.ownedByUser) {

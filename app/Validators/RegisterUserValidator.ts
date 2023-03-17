@@ -39,7 +39,7 @@ export default class RegisterUserValidator {
     ]),
     country_code: schema.string({}, [
       rules.regex(
-        /^\+\d{1,3}$/,
+        /^\+\d{1,4}$/,
       ),
     ]),
     phone_number: schema.string({}, [
@@ -72,6 +72,6 @@ export default class RegisterUserValidator {
     'phone_number.required': 'Phone number is required',
     'phone_number.regex': 'Phone number must be in format 81234567891',
     'country_code.required': 'Country code is required',
-    'country_code.regex': 'Country code must start with + and followed by 1-3 digits',
+    'country_code.regex': 'Country code must start with + and followed by 1-4 digits',
   }
 }
