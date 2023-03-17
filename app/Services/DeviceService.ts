@@ -142,7 +142,7 @@ export default class DeviceService {
         let decrypted = await (new EncryptionService).decrypt(regisData.aes, appDerivedKey)
         let formatted = await this.formatRegisterDeviceData({data: 'AESDUMMY#' + decrypted})
 
-        if (formatted.sn !== regisData.sn || formatted.mac !== regisData.mac.replace(/:/g, '')) {
+        if (formatted.sn !== regisData.sn || formatted.mac !== regisData.mac) {
             throw new Exception('Invalid AES key', 400, 'E_INVALID_AES_KEY')
         }
 
